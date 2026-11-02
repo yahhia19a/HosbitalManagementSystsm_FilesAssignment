@@ -1,0 +1,11 @@
+BasedOnStyle: WebKit
+Language: Cpp
+Standard: c++17
+
+AlignAfterOpenBracket: true
+BreakTemplateDeclarations: true
+ColumnLimit: 100
+InsertNewlineAtEOF: true
+LineEnding: LF
+NamespaceIndentation: None
+SpaceAfterTemplateKeyword: false

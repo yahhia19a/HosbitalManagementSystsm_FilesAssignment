@@ -1,44 +1,19 @@
 #pragma once
-#ifndef FILEHANDLER_H
-#define FILEHANDLER_H
 
 #include <string>
-using namespace std;
-
-struct Doctor {
-    char doctorID[15];
-    char doctorName[30];
-    char specialty[20];
-    char address[30];
-};
-
-struct Appointment {
-    char appointmentID[15];
-    char appointmentDate[30];
-    char doctorID[15];
-};
+#include "Doctor.h"
+#include "Appointment.h"
 
 void initializeFiles();
 
-int readDoctorHeader();
-int readAppointmentHeader();
-
-void writeDoctorHeader(int value);
-void writeAppointmentHeader(int value);
-
-bool writeDoctor(Doctor d, int offset);
 bool readDoctor(int offset, Doctor& d);
+int readDoctorHeader();
+void writeDoctorHeader(int value);
+bool writeDoctor(const Doctor& d, int offset);
+int getDoctorFileEnd(); /// ???
 
-bool writeAppointment(Appointment a, int offset);
+int readAppointmentHeader();
 bool readAppointment(int offset, Appointment& a);
-
-int getDoctorFileEnd();
-int getAppointmentFileEnd();
-
-Doctor createDoctor(string id, string name,
-    string specialty, string address);
-
-Appointment createAppointment(string id, string date,
-    string doctorID);
-
-#endif
+void writeAppointmentHeader(int value);
+bool writeAppointment(const Appointment& a, int offset);
+int getAppointmentFileEnd(); // ???

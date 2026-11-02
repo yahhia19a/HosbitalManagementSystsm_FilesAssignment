@@ -5,19 +5,11 @@
 #include <algorithm>
 using namespace std;
 
-static void copyField(char target[], int size, string value) {
-    memset(target, ' ', size);
-
-    int length = min(size, (int)value.length());
-
-    memcpy(target, value.c_str(), length);
-}
-
 static void initializeFile(string filename) {
 
     fstream file(filename, ios::in | ios::out | ios::binary);
 
-    if (!file) {
+    if (!file.is_open()) {
         ofstream create(filename, ios::binary);
         create.close();
         file.clear();
@@ -26,7 +18,7 @@ static void initializeFile(string filename) {
 
     file.seekg(0, ios::end);
 
-    if (file.tellg() == 0) {
+    if (file.tellg() == 0) { // File is empty
         int header = -1;
 
         file.seekp(0, ios::beg);
@@ -106,7 +98,7 @@ void writeAppointmentHeader(int value) {
     file.close();
 }
 
-bool writeDoctor(Doctor d, int offset) {
+bool writeDoctor(const Doctor& d, int offset) {
 
     fstream file("Doctors.dat", ios::in | ios::out | ios::binary);
 
@@ -140,7 +132,7 @@ bool readDoctor(int offset, Doctor& d) {
     return success;
 }
 
-bool writeAppointment(Appointment a, int offset) {
+bool writeAppointment(const Appointment& a, int offset) {
 
     fstream file("Appointments.dat", ios::in | ios::out | ios::binary);
 
@@ -199,28 +191,4 @@ int getAppointmentFileEnd() {
     file.close();
 
     return offset;
-}
-Doctor createDoctor(string id, string name,
-    string specialty, string address) {
-
-    Doctor d;
-
-    copyField(d.doctorID, 15, id);
-    copyField(d.doctorName, 30, name);
-    copyField(d.specialty, 20, specialty);
-    copyField(d.address, 30, address);
-
-    return d;
-}
-
-Appointment createAppointment(string id, string date,
-    string doctorID) {
-
-    Appointment a;
-
-    copyField(a.appointmentID, 15, id);
-    copyField(a.appointmentDate, 30, date);
-    copyField(a.doctorID, 15, doctorID);
-
-    return a;
 }

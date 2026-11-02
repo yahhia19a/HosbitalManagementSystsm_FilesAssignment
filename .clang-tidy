@@ -1,0 +1,15 @@
+Checks: >
+  -*
+  ,clang-diagnostic-*
+  ,clang-analyzer-*
+  ,bugprone-*
+  ,-bugprone-easily-swappable-parameters
+  ,performance-*
+
+WarningsAsErrors: ''
+
+HeaderFileExtensions:
+  - h
+
+ImplementationFileExtensions:
+  - cpp
