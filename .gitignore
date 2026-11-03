@@ -9,3 +9,11 @@ build/
 *.ll
 Doctors.dat
 Appointments.dat
+
+# Build files
+*.obj
+*.pdb
+*.exe
+
+# IDE
+.vscode/

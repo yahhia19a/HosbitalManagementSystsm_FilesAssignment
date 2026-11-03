@@ -3,6 +3,7 @@
 #include <fstream>
 #include <cstring>
 #include <algorithm>
+#include <vector>
 using namespace std;
 
 static void initializeFile(string filename) {
@@ -191,4 +192,137 @@ int getAppointmentFileEnd() {
     file.close();
 
     return offset;
+}
+//---------------------------------
+
+static const char DELETED_MARKER = '*';
+static const int AVAIL_NULL = -1;
+static const int FILE_HEADER_SIZE = (int)sizeof(int);
+
+// Reads raw bytes of one record.
+static bool readRawRecord(const char* filename, int offset, char* buffer, size_t size) {
+
+    ifstream file(filename, ios::binary);
+
+    if (!file)
+        return false;
+
+    file.seekg(offset, ios::beg);
+    file.read(buffer, (streamsize)size);
+
+    return !file.fail();
+}
+
+// Writes raw bytes of one record.
+static bool writeRawRecord(const char* filename, int offset, const char* buffer, size_t size) {
+
+    fstream file(filename, ios::in | ios::out | ios::binary);
+
+    if (!file)
+        return false;
+
+    file.seekp(offset, ios::beg);
+    file.write(buffer, (streamsize)size);
+    file.flush();
+
+    return !file.fail();
+}
+
+// Pops the head of the AVAIL LIST, or returns the end of file if empty.
+// Reuses the existing header/end-of-file functions of each data file.
+static int allocateSlot(const char* filename,
+                        int recordSize,
+                        int (*readHeader)(),
+                        void (*writeHeader)(int),
+                        int (*getFileEnd)()) {
+
+    int head = readHeader();
+
+    // AVAIL LIST empty -> append at the end of the file.
+    if (head == AVAIL_NULL) {
+
+        int end = getFileEnd();
+
+        if (end < FILE_HEADER_SIZE)
+            return -1;
+
+        if ((end - FILE_HEADER_SIZE) % recordSize != 0)
+            return -1;
+
+        return end;
+    }
+
+    // AVAIL LIST not empty -> reuse the most recently deleted record (LIFO).
+    if (head < FILE_HEADER_SIZE)
+        return -1;
+
+    vector<char> record(recordSize);
+
+    if (!readRawRecord(filename, head, record.data(), record.size()))
+        return -1;
+
+    // Sanity check: a record on the AVAIL LIST must be marked deleted.
+    if (record[0] != DELETED_MARKER)
+        return -1;
+
+    int nextPointer;
+    memcpy(&nextPointer, record.data() + 1, sizeof(int));
+
+    // The next deleted record becomes the new head.
+    writeHeader(nextPointer);
+
+    return head;
+}
+
+// Marks the record deleted and pushes it onto the AVAIL LIST.
+static bool freeSlot(const char* filename,
+                     int recordSize,
+                     int offset,
+                     int (*readHeader)(),
+                     void (*writeHeader)(int)) {
+
+    if (offset < FILE_HEADER_SIZE)
+        return false;
+
+    int oldHead = readHeader();
+
+    vector<char> record(recordSize, 0);
+
+    record[0] = DELETED_MARKER;
+    memcpy(record.data() + 1, &oldHead, sizeof(int));
+
+    if (!writeRawRecord(filename, offset, record.data(), record.size()))
+        return false;
+
+    writeHeader(offset);
+
+    return true;
+}
+
+int allocateDoctorOffset() {
+    return allocateSlot("Doctors.dat", (int)sizeof(Doctor),
+                        readDoctorHeader, writeDoctorHeader, getDoctorFileEnd);
+}
+
+bool freeDoctorOffset(int offset) {
+    return freeSlot("Doctors.dat", (int)sizeof(Doctor), offset,
+                    readDoctorHeader, writeDoctorHeader);
+}
+
+int allocateAppointmentOffset() {
+    return allocateSlot("Appointments.dat", (int)sizeof(Appointment),
+                        readAppointmentHeader, writeAppointmentHeader, getAppointmentFileEnd);
+}
+
+bool freeAppointmentOffset(int offset) {
+    return freeSlot("Appointments.dat", (int)sizeof(Appointment), offset,
+                    readAppointmentHeader, writeAppointmentHeader);
+}
+
+bool isDeletedDoctor(const Doctor& d) {
+    return d.doctorID[0] == DELETED_MARKER;
+}
+
+bool isDeletedAppointment(const Appointment& a) {
+    return a.appointmentID[0] == DELETED_MARKER;
 }

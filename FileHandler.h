@@ -17,3 +17,16 @@ bool readAppointment(int offset, Appointment& a);
 void writeAppointmentHeader(int value);
 bool writeAppointment(const Appointment& a, int offset);
 int getAppointmentFileEnd(); // ???
+
+//-------------------------------
+int allocateDoctorOffset();
+int allocateAppointmentOffset();
+
+// Logically deletes the record at 'offset' (writes '*' marker) and
+// pushes it onto the AVAIL LIST. Returns false on error.
+bool freeDoctorOffset(int offset);
+bool freeAppointmentOffset(int offset);
+
+// True if the record is a logically deleted one.
+bool isDeletedDoctor(const Doctor& d);
+bool isDeletedAppointment(const Appointment& a);

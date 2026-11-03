@@ -1,5 +1,6 @@
 #include "IndexFile.h"
 #include <cstring>
+#include <stdexcept>
 
 const char* PrimaryIndexField::key() const { return primaryKey; }
 
@@ -83,6 +84,21 @@ bool IndexFile<Field>::insert(const char* key, int value)
     field.setValue(value);
 
     m_index.insert(it, field);
+    return true;
+}
+
+// Removes the entry with the given key from the (in-memory, sorted) index.
+// Returns false if the key does not exist.
+template<typename Field>
+bool IndexFile<Field>::remove(const char* key)
+{
+    auto it = binary_search(key);
+
+    if (it == m_index.end() || strcmp(it->key(), key) != 0) {
+        return false;
+    }
+
+    m_index.erase(it);
     return true;
 }
 

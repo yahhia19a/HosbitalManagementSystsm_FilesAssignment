@@ -15,6 +15,10 @@ public:
 
     bool find(const char* primaryKey, int& outByteOffset);
     bool insert(const char* primaryKey, int byteOffset);
+    //---------------------------
+    bool remove(const char* primaryKey);
+//---------------------------
+    bool update(const char* primaryKey, int newByteOffset);
 
 protected:
     typename std::vector<Field>::iterator binary_search(const char* primaryKey);
@@ -52,3 +56,5 @@ struct SecondaryIndexField {
 
 using PrimaryIndexFile = IndexFile<PrimaryIndexField>;
 using SecondaryIndexFile = IndexFile<SecondaryIndexField>;
+
+
